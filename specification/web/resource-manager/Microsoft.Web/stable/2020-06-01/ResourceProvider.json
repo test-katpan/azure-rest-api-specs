@@ -15,6 +15,41 @@
     "application/json"
   ],
   "paths": {
+    "/providers/Microsoft.Web/generateGithubAccessTokenForAppserviceCLI": {
+      "post": {
+        "summary": "Exchange code for GitHub access token for AppService CLI",
+        "description": "Description for Exchange code for GitHub access token for AppService CLI",
+        "operationId": "GenerateGithubAccessTokenForAppserviceCLIAsync",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AppserviceGithubTokenRequest"
+            },
+            "x-ms-client-flatten": true
+          },
+          {
+            "$ref": "#/parameters/apiVersionParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AppserviceGithubToken"
+            }
+          },
+          "default": {
+            "description": "App Service error response.",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/DefaultErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/providers/Microsoft.Web/publishingUsers/web": {
       "get": {
         "summary": "Gets publishing user",
@@ -259,6 +294,112 @@
         }
       }
     },
+    "/subscriptions/{subscriptionId}/providers/Microsoft.Web/customhostnames": {
+      "get": {
+        "summary": "List all hostnames in a subscription",
+        "description": "Description for List all hostnames in a subscription",
+        "operationId": "ListCustomHostNames",
+        "parameters": [
+          {
+            "$ref": "#/parameters/subscriptionIdParameter"
+          },
+          {
+            "$ref": "#/parameters/apiVersionParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/IdentifierCollection"
+            }
+          },
+          "default": {
+            "description": "App Service error response.",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/DefaultErrorResponse"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/providers/Microsoft.Web/customhostnames/{hostName}": {
+      "get": {
+        "summary": "Get custom hostname",
+        "description": "Description for Get custom hostname",
+        "operationId": "GetCustomHostName",
+        "parameters": [
+          {
+            "name": "hostName",
+            "in": "path",
+            "description": "Hostname in the hostname binding.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "$ref": "#/parameters/subscriptionIdParameter"
+          },
+          {
+            "$ref": "#/parameters/apiVersionParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "default": {
+            "description": "App Service error response.",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/DefaultErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscriptionId}/providers/Microsoft.Web/customhostnames/{hostname}/sites": {
+      "get": {
+        "summary": "Get custom hostname",
+        "description": "Description for Get custom hostname",
+        "operationId": "ListCustomHostNameSites",
+        "parameters": [
+          {
+            "name": "hostname",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "$ref": "#/parameters/subscriptionIdParameter"
+          },
+          {
+            "$ref": "#/parameters/apiVersionParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/IdentifierCollection"
+            }
+          },
+          "default": {
+            "description": "App Service error response.",
+            "schema": {
+              "$ref": "./CommonDefinitions.json#/definitions/DefaultErrorResponse"
+            }
+          }
+        },
+        "x-ms-pageable": {
+          "nextLinkName": "nextLink"
+        }
+      }
+    },
     "/subscriptions/{subscriptionId}/providers/Microsoft.Web/deploymentLocations": {
       "get": {
         "summary": "Gets list of available geo regions plus ministamps",
@@ -307,7 +448,10 @@
               "Premium",
               "Dynamic",
               "Isolated",
+              "IsolatedV2",
               "PremiumV2",
+              "PremiumV3",
+              "PremiumContainer",
               "ElasticPremium",
               "ElasticIsolated"
             ],
@@ -624,6 +768,50 @@
     }
   },
   "definitions": {
+    "AppserviceGithubToken": {
+      "description": "Github access token for Appservice CLI github integration.",
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "description": "Github access token for Appservice CLI github integration",
+          "type": "string"
+        },
+        "scope": {
+          "description": "Scope of the github access token",
+          "type": "string"
+        },
+        "tokenType": {
+          "description": "token type",
+          "type": "string"
+        },
+        "gotToken": {
+          "description": "True if valid github token received, False otherwise",
+          "type": "boolean"
+        },
+        "errorMessage": {
+          "description": "Error message if unable to get token",
+          "type": "string"
+        }
+      }
+    },
+    "AppserviceGithubTokenRequest": {
+      "description": "Appservice Github token request content.",
+      "required": [
+        "code",
+        "state"
+      ],
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Code string to exchange for Github Access token",
+          "type": "string"
+        },
+        "state": {
+          "description": "State string used for verification.",
+          "type": "string"
+        }
+      }
+    },
     "BillingMeter": {
       "description": "App Service billing entity that contains information about meter which the Azure billing system utilizes to charge users for services.",
       "type": "object",
@@ -659,6 +847,11 @@
             "osType": {
               "description": "App Service OS type meter used for",
               "type": "string"
+            },
+            "multiplier": {
+              "format": "double",
+              "description": "Meter Multiplier",
+              "type": "number"
             }
           },
           "x-ms-client-flatten": true
@@ -1120,6 +1313,10 @@
         "containerImagePlatform": {
           "description": "Platform (windows or linux)",
           "type": "string"
+        },
+        "appServiceEnvironment": {
+          "$ref": "./CommonDefinitions.json#/definitions/AppServiceEnvironment",
+          "description": "App Service Environment Properties"
         }
       }
     },
@@ -1141,7 +1338,8 @@
           "description": "Resource type used for verification.",
           "enum": [
             "ServerFarm",
-            "Site"
+            "Site",
+            "Microsoft.Web/hostingEnvironments"
           ],
           "type": "string",
           "x-ms-enum": {
@@ -1211,6 +1409,10 @@
             "vnetSubnetName": {
               "description": "The subnet name to be validated",
               "type": "string"
+            },
+            "subnetResourceId": {
+              "description": "The ARM Resource ID of the subnet to validate",
+              "type": "string"
             }
           },
           "x-ms-client-flatten": true
@@ -1229,12 +1431,23 @@
         "properties": {
           "description": "VnetValidationFailureDetails resource specific properties",
           "properties": {
+            "message": {
+              "description": "Text describing the validation outcome.",
+              "type": "string"
+            },
             "failed": {
               "description": "A flag describing whether or not validation failed.",
               "type": "boolean"
             },
             "failedTests": {
               "description": "A list of tests that failed in the validation.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/VnetValidationTestFailure"
+              }
+            },
+            "warnings": {
+              "description": "A list of warnings generated during validation.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/VnetValidationTestFailure"
